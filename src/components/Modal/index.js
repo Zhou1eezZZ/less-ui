@@ -29,6 +29,7 @@ const ModalStyle = styled.div`
   .md-body {
     width: 100%;
     padding: 0 10px;
+    min-height: 100px;
   }
   .md-foot {
     width: 100%;
