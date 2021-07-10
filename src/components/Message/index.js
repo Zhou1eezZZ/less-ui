@@ -1,9 +1,10 @@
-import React, { useEffect } from 'react';
+import React, { useState } from 'react';
 import { render } from 'react-dom';
 import PropTypes from 'prop-types';
 import styled from 'styled-components';
+import { useTransition, animated } from 'react-spring';
 
-const MessageStyle = styled.div`
+const MessageStyle = styled(animated.div)`
   position: fixed;
   top: 20px;
   left: 50%;
@@ -48,14 +49,28 @@ const MessageCom = ({
   delay = 3,
   onClose = () => {},
 }) => {
-  useEffect(() => {
-    delay &&
-      setTimeout(() => {
-        onClose();
-      }, delay * 1000);
-  }, [delay, onClose]);
-  return (
-    <MessageStyle className="cm-shadow">
+  const [items, setItems] = useState([{ key: 0 }]);
+  const transitions = useTransition(items, {
+    from: { opacity: 0, top: -70, life: '100%' },
+    keys: item => item.key,
+    enter: item => async (next, cancel) => {
+      await next({ opacity: 1, top: 20 });
+      await next({ life: '0%' });
+    },
+    leave: { opacity: 0, top: -70 },
+    config: (item, index, phase) => key =>
+      phase === 'enter' && key === 'life'
+        ? { duration: delay * 1000 }
+        : { tension: 125, friction: 20, precision: 0.1 },
+    onRest: (result, ctrl, item) => {
+      setItems(state => state.filter(i => i.key !== item.key));
+    },
+    onDestroyed: () => {
+      onClose && onClose();
+    },
+  });
+  return transitions(({ life, ...styles }) => (
+    <MessageStyle style={styles} className="cm-shadow">
       <div className="left"></div>
       <div className="center">
         <div className="title">{title}</div>
@@ -63,7 +78,7 @@ const MessageCom = ({
       </div>
       <div className="right"></div>
     </MessageStyle>
-  );
+  ));
 };
 
 MessageCom.propTypes = {
@@ -78,18 +93,7 @@ const Message = {
     const bodyEle = document.getElementsByTagName('body')[0];
     const wrapper = document.createElement('div');
     bodyEle.appendChild(wrapper);
-    render(
-      <MessageCom
-        title={title}
-        detail={detail}
-        delay={delay}
-        onClose={() => {
-          bodyEle.removeChild(wrapper);
-          onClose && onClose();
-        }}
-      />,
-      wrapper,
-    );
+    render(<MessageCom title={title} detail={detail} delay={delay} onClose={onClose} />, wrapper);
   },
 };
 

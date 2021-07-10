@@ -1,11 +1,8 @@
-import React, { useEffect, useState } from 'react';
+import React, { useState } from 'react';
 import { Button, Modal, Card, Message } from './components';
 
 function App() {
   const [modalShow, setModalShow] = useState(false);
-  useEffect(() => {
-    Message.show({});
-  }, []);
   return (
     <div className="App">
       Hello, less ui.
@@ -14,7 +11,7 @@ function App() {
       <Button primary onClick={() => setModalShow(true)}>
         open modal
       </Button>
-      <Button>No</Button>
+      <Button onClick={() => Message.show({ onClose: () => console.log('close') })}>No</Button>
       <Button disabled>disable</Button>
       <br />
       <br />
@@ -28,7 +25,6 @@ function App() {
       >
         Modal content
       </Modal>
-      {/* <Message /> */}
     </div>
   );
 }
